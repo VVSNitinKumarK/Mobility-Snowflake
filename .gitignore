@@ -1,0 +1,28 @@
+﻿# Python / venv
+.venv/
+__pycache__/
+*.pyc
+
+# dbt build artifacts
+**/target/
+**/dbt_packages/
+**/logs/
+**/package-lock.yml
+
+# Local env/secrets
+.env
+.env.*
+*.env
+
+# Data files (large CSVs / archives)
+data/*.csv
+data/*.zip
+
+# Personal docs (local only)
+src/docs/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

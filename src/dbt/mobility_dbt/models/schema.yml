@@ -1,0 +1,128 @@
+version: 2
+
+models:
+    - name: stage_trips
+      description: "Cleaned and typed taxi trips with derived trip_date. Rows with null timestamps, zero distance, or zero total amount are excluded."
+      columns:
+          - name: trip_date
+            description: "Trip date derived from pickup timestamp."
+            tests:
+                - not_null
+          - name: pickup_timestamp
+            description: "Pickup time as timestamp_ntz."
+            tests:
+                - not_null
+          - name: dropoff_timestamp
+            description: "Dropoff time as timestamp_ntz."
+            tests:
+                - not_null
+          - name: trip_distance
+            description: "Trip distance in miles."
+            tests:
+                - not_null
+          - name: total_amount
+            description: "Total fare amount."
+            tests:
+                - not_null
+          - name: passenger_count
+            description: "Number of passengers."
+          - name: fare_amount
+            description: "Base fare amount."
+          - name: vendor_id
+            description: "Taxi vendor identifier."
+
+    - name: stage_weather
+      description: "NYC daily weather averaged across NYC-area stations."
+      columns:
+          - name: weather_date
+            description: "Weather observation date."
+            tests:
+                - not_null
+                - unique
+          - name: average_temperature
+            description: "Average temperature across stations (tenths of degree Celsius)."
+          - name: precipitation
+            description: "Average precipitation across stations (tenths of mm)."
+
+    - name: dim_weather_daily
+      description: "Core weather dimension — one row per day with temperature, precipitation, and rain flag."
+      columns:
+          - name: weather_date
+            description: "Weather observation date."
+            tests:
+                - not_null
+                - unique
+          - name: average_temperature
+            description: "Average temperature across NYC stations."
+          - name: precipitation
+            description: "Average precipitation across NYC stations."
+          - name: is_rainy_day
+            description: "TRUE if precipitation > 0, FALSE otherwise."
+            tests:
+                - accepted_values:
+                    arguments:
+                        values: [true, false]
+
+    - name: fact_trips_daily
+      description: "Daily aggregated mobility metrics derived from taxi trips. One row per calendar day."
+      columns:
+          - name: trip_date
+            description: "Date grain for daily trip aggregation."
+            tests:
+                - not_null
+                - unique
+          - name: trip_count
+            description: "Number of trips on this day."
+            tests:
+                - not_null
+          - name: total_revenue
+            description: "Sum of total_amount for all trips on this day."
+            tests:
+                - not_null
+          - name: average_fare
+            description: "Average fare_amount per trip on this day."
+            tests:
+                - not_null
+          - name: average_trip_distance
+            description: "Average trip distance in miles on this day."
+            tests:
+                - not_null
+          - name: average_passenger_count
+            description: "Average passenger count per trip on this day."
+
+    - name: daily_mobility_weather_metrics
+      description: "Daily mobility metrics joined with NYC weather features. One row per calendar day. Weather columns may be NULL on days with no weather data."
+      columns:
+          - name: trip_date
+            description: "Date grain for the daily mart."
+            tests:
+                - not_null
+                - unique
+                - relationships:
+                    arguments:
+                        to: ref('fact_trips_daily')
+                        field: trip_date
+          - name: trip_count
+            description: "Number of trips on this day."
+            tests:
+                - not_null
+          - name: total_revenue
+            description: "Total revenue on this day."
+            tests:
+                - not_null
+          - name: average_fare
+            description: "Average fare per trip."
+          - name: average_trip_distance
+            description: "Average trip distance in miles."
+          - name: average_passenger_count
+            description: "Average passengers per trip."
+          - name: average_temperature
+            description: "Average temperature from NYC weather stations. NULL if no weather data."
+          - name: precipitation
+            description: "Average precipitation. NULL if no weather data."
+          - name: is_rainy_day
+            description: "TRUE if precipitation > 0, FALSE otherwise (including when weather data is missing)."
+            tests:
+                - accepted_values:
+                    arguments:
+                        values: [true, false]

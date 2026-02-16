@@ -1,0 +1,29 @@
+version: 2
+
+sources:
+    - name: raw
+      description: "Raw ingested data from external sources."
+      database: MOBILITY_DB
+      schema: RAW
+      tables:
+          - name: trips_raw
+            description: "NYC Yellow Taxi trip records loaded via COPY INTO from CSV."
+            columns:
+                - name: PICKUP_DATETIME
+                  description: "Pickup timestamp as string (YYYY-MM-DD HH24:MI:SS)."
+                - name: DROPOFF_DATETIME
+                  description: "Dropoff timestamp as string."
+                - name: TRIP_DISTANCE
+                  description: "Trip distance in miles."
+                - name: TOTAL_AMOUNT
+                  description: "Total fare amount including tips, tolls, and surcharges."
+
+          - name: weather_raw
+            description: "NOAA daily weather observations for NYC-area stations, pivoted from long to wide format."
+            columns:
+                - name: WEATHER_DATE
+                  description: "Date of weather observation."
+                - name: AVERAGE_TEMPERATURE
+                  description: "Daily average temperature (tenths of degree Celsius)."
+                - name: PRECIPITATION
+                  description: "Daily precipitation (tenths of mm)."
